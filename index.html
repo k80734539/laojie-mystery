@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>老街迷香</title><!-- build:v3-back -->
+<title>老街迷香</title><!-- build:v4-leave -->
 <style>
 html,body,button,.btn,.hot,#box{touch-action:manipulation}
 #log{position:absolute;inset:0;z-index:12;background:rgba(0,0,0,.9);display:none;flex-direction:column;padding:14px;padding-top:max(14px,env(safe-area-inset-top))}#log h2{color:#f5c26b;text-align:center;margin:4px 0 10px;font-size:20px}#logl{flex:1;overflow:auto;font-size:15px;line-height:1.55;-webkit-overflow-scrolling:touch}#logl p{margin:0 0 10px;white-space:pre-wrap}#logl b{color:#ffd77a}
@@ -31,11 +31,13 @@ html,body{margin:0;height:100%;background:#000;color:#fff;font-family:"PingFang 
 #txt.test{color:#7fe08a}
 #nxt{position:absolute;right:12px;bottom:6px;animation:bob 1s infinite;color:#f5c26b}
 @keyframes bob{50%{transform:translateY(4px)}}
-#bar{position:absolute;left:0;right:0;bottom:0;display:none;gap:6px;padding:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom));background:linear-gradient(#0000,#000d 30%);z-index:4;flex-wrap:wrap;justify-content:center}
+#bar{position:absolute;left:0;right:0;bottom:0;display:none;gap:6px;padding:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom));background:linear-gradient(#0000,#000d 30%);z-index:4;flex-wrap:wrap;justify-content:center;pointer-events:none}
+#bar>*{pointer-events:auto}
 .btn{flex:1;min-width:28%;background:linear-gradient(#3a4a8a,#22295a);border:2px solid #f5c26b;color:#fff;border-radius:12px;padding:12px 6px;font-size:16px;font-weight:bold;text-align:center}
 .btn.red{background:linear-gradient(#d0452f,#8a1f14)}
 .btn:active{transform:scale(.96)}
-#tbar{position:absolute;left:8px;right:8px;display:none;gap:6px;z-index:7}
+#tbar{position:absolute;left:8px;right:8px;display:none;gap:6px;z-index:7;flex-wrap:wrap}
+#tbar .leave{flex-basis:100%!important;padding:9px 2px!important;font-size:14px!important;background:#3a3a44;opacity:.95}
 #modal{position:absolute;inset:0;background:rgba(0,0,0,.82);z-index:10;display:none;flex-direction:column;padding:14px;padding-top:max(14px,env(safe-area-inset-top))}
 #modal h2{margin:4px 0 10px;color:#f5c26b;font-size:20px;text-align:center}
 #mlist{flex:1;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start}
@@ -185,16 +187,20 @@ $('#evBtn').onclick=()=>{ac();if(!busyModal)evModal('證物筆記本',false)};le
 function choose(opts){hideBox();setPor(null);return new Promise(res=>{const b=$('#bar');b.innerHTML='';b.style.display='flex';opts.forEach(([label,val,cls])=>{const x=document.createElement('button');x.className='btn '+(cls||'');x.textContent=label;x.dataset.v=val;x.onclick=()=>{ac();SFX.tap();b.style.display='none';res(val)};b.appendChild(x)})})}
 /* ---------- testimony / cross-exam ---------- */
 // round: {who, lines:[{t,e,press:[[who,t,e]...]}], answer:{i, ev:[...]}, onWrong}
+const WHERE={rust:'後倉庫的鐵門',ledger:'秀蘭茶行的櫃檯',book:'後倉庫的牆',cctv:'老街口的山城民宿',cuff:'跟林先生聊聊',cake:'後倉庫的地上',gift:'秀蘭茶行'};
+function missHint(r){if(r.answer.ev.some(k=>S.ev.includes(k)))return null;return `（好像還缺關鍵證據，先去別處調查看看。提示：${WHERE[r.answer.ev[0]]||'到處看看'}）`}
 async function crossExam(who,title,r){
  let i=0;setBGM(S.flags.final?'final':'test');
- await N(`—— ${title} ——\n（點「追問」逼問細節，發現矛盾就按「出示」證物！）`);
+ await N(`—— ${title} ——\n（點「追問」逼問細節，發現矛盾就按「出示」證物！隨時可按「✖ 離開」先去調查。）`);
+ {const h=missHint(r);if(h)await N(h)}
  while(true){
   const L=r.lines[i];
   hideBox();
   await say(who,`「${L.t}」`,L.e||'normal',{test:true,noWait:true,tag:`．證詞 ${i+1}/${r.lines.length}`});
   const tb=$('#tbar');
   const v=await new Promise(res=>{tb.innerHTML='';tb.style.display='flex';tb.style.bottom=(box.offsetHeight+18)+'px';
-   let done=false;[['◀ 上一句','prev'],['追問','press'],['出示','present','red'],['下一句 ▶','next']].forEach(([l,val,c])=>{const x=document.createElement('button');x.type='button';x.className='btn '+(c||'');x.style.minWidth='0';x.style.flex=1;x.style.padding='14px 2px';x.style.fontSize='15px';x.textContent=l;x.dataset.v=val;onTap(x,()=>{if(done)return;done=true;ac();SFX.tap();tb.style.display='none';res(val)});tb.appendChild(x)})});
+   let done=false;[['◀ 上一句','prev'],['追問','press'],['出示','present','red'],['下一句 ▶','next'],[S.flags.final?'✖ 先撤退，回去再查（保留心數）':'✖ 離開，先去調查','leave','leave']].forEach(([l,val,c])=>{const x=document.createElement('button');x.type='button';x.className='btn '+(c||'');x.dataset.act=val;x.style.minWidth='0';x.style.flex=1;x.style.padding='14px 2px';x.style.fontSize='15px';x.textContent=l;x.dataset.v=val;onTap(x,()=>{if(done)return;done=true;ac();SFX.tap();tb.style.display='none';res(val)});tb.appendChild(x)})});
+  if(v==='leave'){hideBox();setPor(null);await N(S.flags.final?'（先撤退整理線索。信用的心數會保留，準備好再按「⚖️ 指認兇手」繼續對質。）':`（先離開，晚點再找${CH[who]}談。）`);return 'leave'}
   if(v==='prev'){i=(i-1+r.lines.length)%r.lines.length;continue}
   if(v==='next'){i++;if(i>=r.lines.length){i=0;await N('（證詞又繞回第一句了。哪一句跟證物對不上？）')}continue}
   if(v==='press'){await flash('等一下！');for(const p of (L.press||[[who,'……就是這樣，沒什麼好說的。']]))await say(p[0],p[1],p[2]);continue}
@@ -203,7 +209,7 @@ async function crossExam(who,title,r){
    SFX.wrong();setPor(who,'normal',true);
    await say(who,r.wrongLine||'……你拿這個出來是想說什麼？跟我說的話根本沒有矛盾啊。','normal');
    if(S.flags.final){S.hearts--;hearts();if(S.hearts<=0)return 'dead';await N(`（判斷失誤，信用剩下 ${S.hearts} 顆心……）`)}
-   else await N('（好像不對……再看看證詞跟證物哪裡對不上。）');
+   else await N(missHint(r)||'（好像不對……再看看證詞跟證物哪裡對不上。）');
   }
  }
 }
@@ -222,19 +228,19 @@ const SC={
   {id:'fuki',x:4,y:66,w:50,h:18,l:'芋頭糕',f:async()=>{await N('櫃檯上的芋粿煎得金黃，聞起來有紅蔥頭的香味。');await say('yu','這是福記的祖傳芋粿，是鹹的喔。我們家從來不做甜的。','normal');await say('yu','而且阿福伯有糖尿病，醫生叫他不能吃甜的……他自己也很少碰。','nervous');await getEv('fuki')}},
   {id:'photo',x:25,y:11,w:24,h:21,l:'老照片',f:async()=>{await N('牆上掛著福記歷代的老照片。');await N('其中一張是年輕的阿福伯跟一個女孩的合照，但女孩的臉被貼紙遮住了。');await say('jie','那是我姑姑。很久以前跟爺爺吵架離家出走，就再也沒回來了。','normal')}},
   {id:'storedoor',x:58,y:30,w:28,h:30,l:'往倉庫',f:()=>go('store')},
-  {id:'out',x:60,y:86,w:38,h:9,l:'回老街',f:()=>go('street')}],
+  {id:'out',x:60,y:76,w:38,h:9,l:'回老街',f:()=>go('street')}],
   people:['jie','yu']},
  store:{name:'後倉庫',bg:'store',hots:[
   {id:'door',x:40,y:15,w:28,h:52,l:'生鏽鐵門',f:async()=>{await N('倉庫後門，一扇生鏽的老鐵門，直通外面的小巷。');await N('門很重，我用手推了一下——手掌馬上沾滿橘紅色的鐵鏽，擦都擦不掉。');await N('想從這扇門進出，手或袖子一定會沾到鏽。');await getEv('rust')}},
   {id:'cake',x:54,y:70,w:26,h:14,l:'芋粿',f:async()=>{await N('地上那塊芋粿，就是阿福伯倒下時緊握著的。');await N('咬開的地方露出紫色的……甜芋泥？外皮軟軟的，不像煎過。');await N('包裝紅紙上有張貼紙：「台北．芋見甜點」。');await getEv('cake');await getEv('hosp')}},
   {id:'brick',x:80,y:36,w:16,h:9,l:'鬆動的磚',f:async()=>{await N('牆上有一塊磚是鬆的……挖開，裡面藏著一本泛黃的本子！');await N('「福記祖傳配方」。裡面還夾著一張紙跟一張老照片。');await getEv('book')}},
   {id:'stool',x:74,y:64,w:24,h:20,l:'倒下的凳子',f:async()=>{await N('翻倒的板凳。阿福伯大概是坐著吃東西，睡意一上來就整個人倒下去了。');await N('現場沒有打鬥的痕跡。')}},
-  {id:'back',x:2,y:86,w:40,h:9,l:'回店裡',f:()=>go('shop')}],
+  {id:'back',x:2,y:76,w:40,h:9,l:'回店裡',f:()=>go('shop')}],
   people:[]},
  tea:{name:'秀蘭茶行',bg:'tea',hots:[
   {id:'ledger',x:20,y:66,w:60,h:18,l:'帳本',f:async()=>{await N('櫃檯上攤開一本手寫帳本，字跡很工整。');await N('翻到前面……每個月一號都寫著：「福記 阿福 凍頂一斤　免錢」。一寫就是三十幾年。');await N('最新一頁：「20:50 停電 點蠟燭　民宿 林先生 買凍頂半斤 現金」。');await getEv('ledger')}},
   {id:'giftbox',x:60,y:50,w:30,h:13,l:'紅紙盒',f:async()=>{await N('櫃檯角落放著一盒沒拆的點心，紅紙包裝。');await N('貼紙寫著：「台北．芋見甜點」。');await say('lan','那個建商送的啦，說是台北帶來的伴手禮。誰要吃他的東西。','normal');await getEv('gift')}},
-  {id:'out',x:2,y:86,w:40,h:9,l:'回老街',f:()=>go('street')}],
+  {id:'out',x:2,y:76,w:40,h:9,l:'回老街',f:()=>go('street')}],
   people:['lan']}
 };
 let curHots=null;
@@ -248,7 +254,7 @@ function renderScene(){setBGM('inv');const sc=SC[S.scene];$('#place').textConten
 let busy=false;
 async function act(fn){if(busy)return;ac();busy=true;$('#hs').style.visibility='hidden';$('#bar').style.display='none';try{await fn()}finally{busy=false;$('#hs').style.visibility='';if(!S.ended)renderScene()}}
 async function go(k){S.scene=k;setBg(SC[k].bg);SFX.tap()}
-const canAccuse=()=>S.flags.jieDone&&S.flags.lanDone&&S.flags.yuDone&&S.ev.includes('cctv')&&S.ev.includes('book');
+const canAccuse=()=>S.flags.jieDone&&S.flags.lanDone&&S.flags.yuDone&&S.ev.includes('cctv')&&S.ev.includes('book')&&(S.ev.includes('cake')||S.ev.includes('gift'))&&(S.ev.includes('cuff')||S.ev.includes('rust'));
 /* ---------- talks ---------- */
 async function talk(p){
  if(p==='lin'){
@@ -261,7 +267,10 @@ async function talk(p){
    await say('lin','這個？喝咖啡不小心沾到的啦。','nervous');
    await getEv('cuff');return}
   if(canAccuse()){await say('lin','偵探先生，還有事嗎？颱風停了我就要回台北囉。','normal');await N('（證據應該夠了。準備好就按「⚖️ 指認兇手」。）');return}
-  await say('lin','我說過了，我整晚都在民宿。你去問別人吧。','normal');return}
+  await say('lin','我說過了，我整晚都在民宿。你去問別人吧。','normal');
+  const need=[];if(!S.flags.jieDone)need.push('阿傑');if(!S.flags.lanDone)need.push('秀蘭姨');if(!S.flags.yuDone)need.push('小雨');
+  const miss=[];if(!S.ev.includes('cctv'))miss.push('老街口的民宿');if(!S.ev.includes('book'))miss.push('後倉庫的牆');if(!S.ev.includes('cake')&&!S.ev.includes('gift'))miss.push('後倉庫地上的芋粿');
+  await N('（要指認兇手還不夠。'+(need.length?'還沒問完：'+need.join('、')+'。':'')+(miss.length?'還沒查過：'+miss.join('、')+'。':'')+'）');return}
  if(p==='jie'){
   if(S.flags.jieDone){await say('jie','爺爺一定會醒來的……我想親口跟他道歉。','nervous');return}
   if(!S.flags.jieMet){S.flags.jieMet=1;await say('jie','……你就是那個偵探？我先說，不是我。','normal');await say('jie','對啦，我是想把店賣給建商。這破店一年賺不到幾個錢，爺爺年紀那麼大了。','normal');await say('jie','前天我們大吵一架，整條街都聽到了。所以大家都在懷疑我，對吧？','nervous')}
@@ -270,6 +279,7 @@ async function talk(p){
    {t:'我整晚都沒下樓，更沒進過倉庫一步。',press:[['me','你確定？一步都沒有？'],['jie','你很煩欸！倉庫那扇破鐵門我碰都不想碰。','nervous']]},
    {t:'是小雨九點半發現爺爺倒下的，我才被她叫醒。',press:[['jie','她哭著衝上樓，我才知道出事了。'],['yu','（小雨在旁邊默默點頭。）']]}],
    answer:{i:1,ev:['rust']}});
+  if(k==='leave')return;
   await say('me','你說你沒進過倉庫？那你的袖口上，為什麼沾著倉庫鐵門的鐵鏽！');
   await say('jie','唔……！','broken',{shake:true});
   await say('jie','……好啦！我去過！但那是停電【之前】，八點二十左右。','broken');
@@ -280,20 +290,22 @@ async function talk(p){
  if(p==='lan'){
   if(S.flags.lanDone){await say('lan','民宿老闆娘門口有監視器，你去問她看看。','normal');return}
   if(!S.flags.lanMet){S.flags.lanMet=1;await say('lan','福記的事問我幹嘛？我們兩家是死對頭，整條街誰不知道。','normal');await say('lan','外面都在傳我偷了他的配方，笑死人。','normal')}
-  const k=await crossExam('lan','秀蘭姨的證詞：福記跟我',{lines:[
+  if(!S.flags.lan1){const k=await crossExam('lan','秀蘭姨的證詞：福記跟我',{lines:[
    {t:'我跟福記那個死老頭，四十年沒講過一句話。',press:[['lan','從年輕吵到老，見面就轉頭。'],['me','（說得斬釘截鐵……）']]},
    {t:'他家的配方，我才不稀罕。我們賣茶的，要糕餅配方幹嘛？',press:[['lan','我家的茶比他家的糕好賣多了。']]},
    {t:'昨晚一停電我就拉下鐵門，整晚一個客人都沒有。',press:[['lan','颱風天誰會出門買茶？瘋了才會。'],['me','（真的一個都沒有嗎……？）']]}],
    answer:{i:0,ev:['ledger']}});
+  if(k==='leave')return;S.flags.lan1=1;
   await say('me','四十年沒講過話？那帳本上為什麼每個月都寫著「福記 阿福 凍頂一斤　免錢」！');
   await say('lan','你、你偷看人家帳本！','broken',{shake:true});
   await say('lan','……唉。我們年輕的時候是一起學手藝的師兄妹。吵架是做給街坊看的，習慣了。','broken');
   await say('lan','他每個月來拿茶，順便聊天。他說他找到失散的外孫女了……就在店裡。','nervous');
-  await N('……還有一件事。她說「整晚沒有客人」，但帳本上寫著——');
+  await N('……還有一件事。她說「整晚沒有客人」，但帳本上寫著——');}
   const k2=await crossExam('lan','秀蘭姨的證詞：昨晚',{lines:[
    {t:'昨晚一停電我就拉下鐵門，整晚一個客人都沒有。',press:[['lan','我記錯了嗎……？']]},
    {t:'我整晚都在店裡點蠟燭記帳，哪裡都沒去。',press:[['lan','這個你可以問隔壁，他們看得到我的燭光。']]}],
    answer:{i:0,ev:['ledger']}});
+  if(k2==='leave')return;
   await say('me','帳本上寫著：「20:50　民宿 林先生 買凍頂半斤」！');
   await say('lan','啊……對齁！我忘了，那個建商有來。','nervous',{shake:true});
   await say('lan','停電後十分鐘吧，他全身溼答答跑來買茶，很奇怪，還問我「福記倉庫的後門是不是從巷子就進得去」。','nervous');
@@ -307,6 +319,7 @@ async function talk(p){
    {t:'九點半我煮了薑茶要送去倉庫，就看到阿福伯倒在地上了。',press:[['yu','他手裡還緊緊握著那塊芋粿……','nervous']]},
    {t:'那塊芋粿不是我們店裡的，我不知道是哪裡來的。',press:[['yu','店裡沒有人會做甜的芋粿。']]}],
    answer:{i:0,ev:['book']},wrongLine:'這、這個跟我有什麼關係……'});
+  if(k==='leave')return;
   await say('me','沒有親戚關係？那這本配方本裡的遺囑，為什麼寫著「交給我的外孫女——小雨」！');
   await say('yu','……！','broken',{shake:true});
   await say('yu','……照片裡抱著我的，是我媽媽。她二十年前跟外公吵架離家，去年生病走了。','broken');
@@ -318,6 +331,7 @@ async function talk(p){
 }
 /* ---------- accusation & finale ---------- */
 async function accuse(){
+ if(S.finalPend){S.finalPend=0;await N(`繼續跟林先生對質。（信用剩下 ${S.hearts} 顆心）`);S.flags.final=1;hearts();setBGM('final');return finale()}
  await N('所有線索都到手了。讓阿福伯吃下安眠藥的人，就是……');
  const v=await new Promise(res=>{const m=$('#modal');m.style.display='flex';$('#mtitle').textContent='⚖️ 指認兇手';const L=$('#mlist');L.innerHTML='';L.className='accuse';
   ['jie','lan','lin','yu'].forEach(c=>{const d=document.createElement('div');d.className='sus';d.dataset.c=c;d.innerHTML=`<img src="${ART[c+'_normal']}"><div>${CH[c]}</div>`;d.onclick=()=>{SFX.tap();m.style.display='none';L.className='';res(c)};L.appendChild(d)});
@@ -327,14 +341,17 @@ async function accuse(){
  await flash('犯人就是你！');
  await say('me','林先生——讓阿福伯昏倒在倉庫的人，就是你！');
  await say('lin','哈，偵探先生，你在開玩笑吧？','normal');
- S.flags.final=1;S.hearts=5;hearts();setBGM('final');
+ S.flags.final=1;S.hearts=5;S.finalR=0;hearts();setBGM('final');
+ return finale()}
+async function finale(){
  const R=[
   {title:'林先生的反駁 1',lines:[{t:'我說過了，停電那晚我一步都沒離開民宿。',press:[['lin','颱風天誰要出去淋雨？']]},{t:'整條街都停電，黑成那樣，誰能證明我出去過？',press:[['lin','沒有證據就別亂講。']]}],answer:{i:0,ev:['cctv','ledger']},after:async()=>{await say('me','民宿的監視器有裝電池！20:45 你提著紅紙盒出門，21:25 才空手回來！');await say('lin','唔……！','nervous',{shake:true});await say('lin','好、好吧，我是出去了一下。但我只是去茶行買茶而已！','nervous')}},
   {title:'林先生的反駁 2',lines:[{t:'我只是去對面茶行買半斤茶，根本沒靠近福記。',press:[['lin','你可以去問秀蘭姨，我確實有買茶。']]},{t:'福記的倉庫在哪我都不知道，怎麼可能進去？',press:[['lin','我又不是這條街的人。']]}],answer:{i:1,ev:['cuff','rust']},after:async()=>{await say('me','不知道倉庫在哪？那你袖口上的橘紅色污漬，是什麼？');await say('me','那根本不是咖啡，是倉庫後門的鐵鏽！你還問過秀蘭姨後門怎麼走！');await say('lin','這、這……','nervous',{shake:true});await say('lin','就算我去找阿福伯談生意好了！他自己吃了芋粿睡著，干我什麼事！','nervous')}},
   {title:'林先生的反駁 3',lines:[{t:'他吃的芋粿是福記自己做的吧？安眠藥是誰放的，誰知道。',press:[['lin','說不定是那個孫子放的啊。']]},{t:'我帶去的只是茶葉，什麼吃的都沒帶。',press:[['lin','你看我像會做糕餅的人嗎？']]}],answer:{i:0,ev:['cake','gift']},after:async()=>{await say('me','福記的芋粿是鹹的，從來不做甜的！');await say('me','阿福伯手裡那塊是甜芋泥，包裝上貼著「台北．芋見甜點」——跟你送給街坊的伴手禮一模一樣！');await say('lin','…………！','nervous',{shake:true});await say('lin','就……就算是我送的又怎樣！我幹嘛要害一個老人家？','nervous')}},
   {title:'林先生的最後反駁',lines:[{t:'他倒下對我有什麼好處？我還要跟他談買賣耶！',press:[['lin','我是生意人，害他只會讓生意更難談。']]},{t:'要賣店的是他孫子，跟我又沒關係。',press:[['lin','我只是個買家而已。']]}],answer:{i:0,ev:['book']},after:async()=>{await say('me','好處可大了。阿福伯寫了遺囑，要把福記交給外孫女小雨。');await say('me','只要他昏睡、你趁機拿走遺囑，能決定賣店的就只剩阿傑——你的收購案就能成了！');await say('me','可惜你在倉庫翻了半天，沒想到遺囑就藏在磚塊後面的配方本裡！')}}
  ];
- for(const r of R){const k=await crossExam('lin',r.title,r);if(k==='dead')return badEnd('hearts');await r.after()}
+ for(let j=S.finalR||0;j<R.length;j++){const r=R[j];const k=await crossExam('lin',r.title,r);if(k==='dead')return badEnd('hearts');if(k==='leave'){S.finalR=S.finalR||0;S.flags.final=0;S.finalPend=1;hearts();return}await r.after();S.finalR=j+1}
+ S.finalR=0;
  await flash('真相大白！');
  await say('lin','啊啊啊啊啊——！！','broken',{shake:true});
  await say('lin','……我只是想讓他睡一下而已！整排老屋只差福記一間……公司說這個月再收不到，我就完了……','broken');
@@ -351,7 +368,7 @@ async function badEnd(v){
  const c=await choose([['回到指認前','retry','red'],['從頭開始','restart']]);
  S.ended=false;
  if(c==='restart')return location.reload();
- S.flags.final=0;S.hearts=5;hearts();S.scene='street';setBg('street');
+ S.flags.final=0;S.hearts=5;S.finalR=0;S.finalPend=0;hearts();S.scene="street";setBg('street');
 }
 async function goodEnd(){
  S.ended=true;$('#hs').innerHTML='';setBGM('inv');SFX.win();

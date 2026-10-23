@@ -1,7 +1,9 @@
 <!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>老街迷香</title><!-- build:v2-bgm -->
+<title>老街迷香</title><!-- build:v3-back -->
 <style>
+html,body,button,.btn,.hot,#box{touch-action:manipulation}
+#log{position:absolute;inset:0;z-index:12;background:rgba(0,0,0,.9);display:none;flex-direction:column;padding:14px;padding-top:max(14px,env(safe-area-inset-top))}#log h2{color:#f5c26b;text-align:center;margin:4px 0 10px;font-size:20px}#logl{flex:1;overflow:auto;font-size:15px;line-height:1.55;-webkit-overflow-scrolling:touch}#logl p{margin:0 0 10px;white-space:pre-wrap}#logl b{color:#ffd77a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
 html,body{margin:0;height:100%;background:#000;color:#fff;font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;overflow:hidden}
 #app{position:relative;margin:0 auto;height:100%;max-width:56.25vh;overflow:hidden;background:#000}
@@ -57,12 +59,12 @@ html,body{margin:0;height:100%;background:#000;color:#fff;font-family:"PingFang 
 <div id="bg"></div><canvas id="rain"></canvas>
 <img id="por" alt="">
 <div id="hs"></div>
-<div id="hud"><div id="place"></div><div><span id="hearts"></span><button class="hb" id="bgmBtn" style="background:#2a3a6a">♪ 開</button><button class="hb" id="evBtn" style="display:none">📒 證物</button></div></div>
+<div id="hud"><div id="place"></div><div><span id="hearts"></span><button class="hb" id="logBtn" style="background:#2a3a6a">📜 回顧</button><button class="hb" id="bgmBtn" style="background:#2a3a6a">♪ 開</button><button class="hb" id="evBtn" style="display:none">📒 證物</button></div></div>
 <div id="bar"></div>
 <div id="tbar"></div>
 <div id="box"><div id="name"></div><div id="txt"></div><div id="nxt">▼</div></div>
 <div id="modal"><h2 id="mtitle"></h2><div id="mlist"></div><div id="mdesc"></div><div id="mbtns"></div></div>
-<div id="flash"><div id="flasht">就是這個！</div></div>
+<div id="log"><h2>📜 對話回顧</h2><div id="logl"></div><button class="btn" id="logClose" style="flex:none;margin-top:10px">關閉</button></div><div id="flash"><div id="flasht">就是這個！</div></div>
 <div id="chap"></div>
 <div id="title"><h1>老街迷香</h1><p>颱風夜．百年糕餅店的謎</p><button class="btn red" id="startBtn" style="flex:none;width:60%">開始調查</button></div>
 </div>
@@ -148,8 +150,10 @@ let waiter=null,skip=false;
 box.addEventListener('click',()=>{ac();if(typing){skip=true}else if(waiter){const w=waiter;waiter=null;SFX.tap();w()}});
 let typing=false;
 function setPor(c,e='normal',fx){if(!c){por.classList.remove('on');por.dataset.c='';return}const src=ART[c+'_'+e];if(por.dataset.k!==c+e){por.src=src;por.dataset.k=c+e}por.dataset.c=c;por.classList.add('on');if(fx){por.classList.remove('shake');void por.offsetWidth;por.classList.add('shake')}}
+const LOG=[];function onTap(el,fn){let tt=0;el.addEventListener('touchend',ev=>{ev.preventDefault();tt=Date.now();fn(ev)},{passive:false});el.addEventListener('click',ev=>{if(Date.now()-tt<700)return;fn(ev)})}
 async function say(who,t,e,opt={}){
- box.style.display='block';nm.textContent=who?(CH[who]||who):'';txt.className=opt.test?'test':'';
+ if(!opt.test){LOG.push([who?(CH[who]||who):'',t]);if(LOG.length>60)LOG.shift()}
+ box.style.display='block';nm.textContent=(who?(CH[who]||who):'')+(opt.tag||'');txt.className=opt.test?'test':'';
  if(who&&ART[who+'_normal'])setPor(who,e||'normal',opt.shake);
  typing=true;skip=false;txt.textContent='';
  for(let i=0;i<t.length;i++){if(skip||window.__fast){txt.textContent=t;break}txt.textContent+=t[i];if(i%2==0&&t[i]!=' ')SFX.blip();await sleep(t[i]==='…'||t[i]==='。'?90:28)}
@@ -175,6 +179,7 @@ function evModal(title,presentable){return new Promise(res=>{
  const cb=document.createElement('button');cb.className='btn';cb.id='closeBtn';cb.textContent='返回';cb.onclick=()=>{SFX.tap();m.style.display='none';res(null)};B.appendChild(cb);
 })}
 $('#bgmBtn').textContent=bgmOn?'♪ 開':'♪ 關';$('#bgmBtn').onclick=e=>{e.stopPropagation();ac();toggleBGM()};
+onTap($('#logBtn'),e=>{e.stopPropagation();ac();$('#logl').innerHTML=LOG.map(([n,t])=>`<p>${n?`<b>${n}</b>　`:''}${t.replace(/</g,'&lt;')}</p>`).join('')||'<p>還沒有對話。</p>';$('#log').style.display='flex';const l=$('#logl');l.scrollTop=l.scrollHeight});onTap($('#logClose'),()=>{$('#log').style.display='none'});
 $('#evBtn').onclick=()=>{ac();if(!busyModal)evModal('證物筆記本',false)};let busyModal=false;
 /* ---------- choice ---------- */
 function choose(opts){hideBox();setPor(null);return new Promise(res=>{const b=$('#bar');b.innerHTML='';b.style.display='flex';opts.forEach(([label,val,cls])=>{const x=document.createElement('button');x.className='btn '+(cls||'');x.textContent=label;x.dataset.v=val;x.onclick=()=>{ac();SFX.tap();b.style.display='none';res(val)};b.appendChild(x)})})}
@@ -186,10 +191,10 @@ async function crossExam(who,title,r){
  while(true){
   const L=r.lines[i];
   hideBox();
-  await say(who,`「${L.t}」`,L.e||'normal',{test:true,noWait:true});
+  await say(who,`「${L.t}」`,L.e||'normal',{test:true,noWait:true,tag:`．證詞 ${i+1}/${r.lines.length}`});
   const tb=$('#tbar');
   const v=await new Promise(res=>{tb.innerHTML='';tb.style.display='flex';tb.style.bottom=(box.offsetHeight+18)+'px';
-   [['◀','prev'],['追問','press'],['出示','present','red'],['▶','next']].forEach(([l,val,c])=>{const x=document.createElement('button');x.className='btn '+(c||'');x.style.minWidth='0';x.style.flex=(l.length>1?2:1);x.textContent=l;x.dataset.v=val;x.onclick=()=>{ac();SFX.tap();tb.style.display='none';res(val)};tb.appendChild(x)})});
+   let done=false;[['◀ 上一句','prev'],['追問','press'],['出示','present','red'],['下一句 ▶','next']].forEach(([l,val,c])=>{const x=document.createElement('button');x.type='button';x.className='btn '+(c||'');x.style.minWidth='0';x.style.flex=1;x.style.padding='14px 2px';x.style.fontSize='15px';x.textContent=l;x.dataset.v=val;onTap(x,()=>{if(done)return;done=true;ac();SFX.tap();tb.style.display='none';res(val)});tb.appendChild(x)})});
   if(v==='prev'){i=(i-1+r.lines.length)%r.lines.length;continue}
   if(v==='next'){i++;if(i>=r.lines.length){i=0;await N('（證詞又繞回第一句了。哪一句跟證物對不上？）')}continue}
   if(v==='press'){await flash('等一下！');for(const p of (L.press||[[who,'……就是這樣，沒什麼好說的。']]))await say(p[0],p[1],p[2]);continue}

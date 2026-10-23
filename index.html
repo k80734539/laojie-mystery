@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>老街迷香</title><!-- build:v11-intro -->
+<title>老街迷香</title><!-- build:v12-mainplot -->
 <style>
 html,body,button,.btn,.hot,#box{touch-action:manipulation}
 #log{position:absolute;inset:0;z-index:12;background:rgba(0,0,0,.9);display:none;flex-direction:column;padding:14px;padding-top:max(14px,env(safe-area-inset-top))}#log h2{color:#f5c26b;text-align:center;margin:4px 0 10px;font-size:20px}#logl{flex:1;overflow:auto;font-size:15px;line-height:1.55;-webkit-overflow-scrolling:touch}#logl p{margin:0 0 10px;white-space:pre-wrap}#logl b{color:#ffd77a}
@@ -160,13 +160,14 @@ html,body{margin:0;height:100%;background:#000;color:#fff;font-family:"PingFang 
 @keyframes hba{to{transform:translate(-26px,40px) rotate(-35deg);opacity:0}}@keyframes hbb{to{transform:translate(26px,44px) rotate(35deg);opacity:0}}
 @media (prefers-reduced-motion:reduce){#ep *,#ep.on *{animation:none!important;transition:none!important}#ep.p1 .ci,#ep.p2 .ci{transform:skewY(-6deg)}#ep.p2 .tx,#ep.p3 .cd{opacity:1;transform:none}#ep.p3 .ci,#ep.p3 .tx{opacity:0}#ep.p1 .sl{opacity:.4}#ep.wr .x,#ep.wr .rd{opacity:1}#ep.wr.hl .hbk .b{opacity:0}#app.shk3,#por.tilt,#por.smug{animation:none!important}#mlist .ev{transition:none}#presentBtn.rdy{animation:none}}
 </style>
+<style id="mpc">#docv{position:absolute;inset:0;z-index:25;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);padding:18px}#docv .pp{width:100%;max-width:340px;background:linear-gradient(170deg,#f4ecd8,#ddd0b0);color:#2b2418;border-radius:6px;padding:18px 18px 14px;box-shadow:0 10px 30px rgba(0,0,0,.6);font-size:15px;line-height:1.65;text-align:center}#docv .lg{margin:0 auto 4px;width:120px;height:80px;background:#1f2a3c;border-radius:10px;display:flex;align-items:center;justify-content:center}#docv h3{margin:6px 0 2px;font-size:20px;letter-spacing:4px}#docv .bd{text-align:left;white-space:pre-line;margin-top:8px;border-top:1px dashed #8a7a5a;padding-top:8px}#docv .tp{margin-top:10px;font-size:12px;color:#6a5a3a}</style>
 </head><body><div id="app">
 <div id="bg"></div><canvas id="rain"></canvas>
 <img id="por" alt="">
 <div id="hs"></div>
 <div id="hud"><div id="place"></div><div><span id="hearts"></span><button class="hbk" id="logBtn" style="background:#2a3a6a">📜 回顧</button><button class="hb" id="bgmBtn" style="background:#2a3a6a">♪ 開</button><button class="hb" id="evBtn" style="display:none">📒 證物</button></div></div>
 <div id="bar"></div>
-<div id="tbar"></div><div id="tban"></div><div id="ep"><div class="bg"></div><div class="sl"></div><div class="fl"></div><div class="rd"></div><div class="ci"><i></i><img alt=""></div><div class="tx"><b>就是這個！</b></div><div class="cd"></div><div class="st"></div><div class="x">✗</div><div class="hbk"><span class="a">💔</span></div><div class="tap">點一下跳過 ▶</div></div><div id="burst"><div class="sl"></div><div class="bb"></div><div class="bt">追問！</div></div>
+<div id="tbar"></div><div id="tban"></div><div id="docv"><div class="pp"><div class="lg"><svg viewBox="0 0 120 80" width="120" height="80" aria-label="雲嶺開發標誌"><g fill="none" stroke="#c9d6e8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M28 50a14 14 0 0 1 4-27a20 20 0 0 1 36-6a16 16 0 0 1 24 14a12 12 0 0 1-2 19z"/><path d="M22 66l22-18l14 10l14-14l26 22" stroke="#8fa3bf"/></g></svg></div><h3>雲嶺開發</h3><div class="bd"></div><div class="tp">點一下關閉</div></div></div><div id="ep"><div class="bg"></div><div class="sl"></div><div class="fl"></div><div class="rd"></div><div class="ci"><i></i><img alt=""></div><div class="tx"><b>就是這個！</b></div><div class="cd"></div><div class="st"></div><div class="x">✗</div><div class="hbk"><span class="a">💔</span></div><div class="tap">點一下跳過 ▶</div></div><div id="burst"><div class="sl"></div><div class="bb"></div><div class="bt">追問！</div></div>
 <div id="box"><div id="name"></div><div id="txt"></div><div id="nxt">▼</div></div>
 <div id="modal"><h2 id="mtitle"></h2><div id="mlist"></div><div id="mdesc"></div><div id="mbtns"></div></div>
 <div id="log"><h2>📜 對話回顧</h2><div id="logl"></div><button class="btn" id="logClose" style="flex:none;margin-top:10px">關閉</button></div><div id="flash"><div id="flasht">就是這個！</div></div>
@@ -239,6 +240,7 @@ const S={ev:[],flags:{},hearts:5,scene:null,hints:0,miss:0};
 window.__G=S;window.__fast=false;
 const CH={jie:'阿傑',lan:'秀蘭姨',lin:'林先生',yu:'小雨',me:'我',doc:'醫院',bnb:'民宿老闆娘',fu:'阿福伯'};
 const EV={
+ yunling:{ic:'☁️',n:'雲嶺開發的名片',d:'林先生掉在街口的名片。\n抬頭是一個雲朵形狀的標誌：【雲嶺開發】土地開發部 特約顧問。\n背面寫著：「福記 32 坪，限月底前簽約——上面交代，價錢不是問題」。\n（他不只是普通的買家……）'},
  clock:{ic:'🕰️',n:'停電時間',d:'老街口的電子鐘停在【20:40】。\n颱風把電線吹斷，整條街從 20:40 開始停電，一直到半夜才恢復。'},
  rust:{ic:'🚪',n:'倉庫鐵門的鐵鏽',d:'倉庫後門是一扇生鏽的老鐵門，從巷子也進得來。門很重，一定要用手推門板才推得開。\n摸過的地方會沾上【橘紅色的鐵鏽】，擦都擦不掉。\n👉 阿傑的右手掌心，也沾著一模一樣的【橘紅色鐵鏽】。'},
  cake:{ic:'🍠',n:'吃一半的芋粿',d:'阿福伯倒下時手裡握著的。裡面是【甜的芋泥內餡】（福記的芋粿是鹹的），外皮很軟。\n包裝紅紙上貼著一張小貼紙：「台北．芋見甜點」。\n醫院在裡面驗出了安眠藥。'},
@@ -334,6 +336,7 @@ async function epMiss(who,heart){
  await epWait(heart?820:600,st);e.className='';
  setPor(who,'normal');por.classList.remove('smug');void por.offsetWidth;if(!RM.matches)por.classList.add('smug');
 }
+function showDoc(t){return new Promise(r=>{const d=$('#docv');d.querySelector('.bd').textContent=t;d.style.display='flex';SFX.blip&&SFX.blip();const c=()=>{d.style.display='none';d.ontouchend=d.onclick=null;r()};setTimeout(()=>{d.ontouchend=e=>{e.preventDefault();c()};d.onclick=c},window.__fast?0:250)})}
 async function crossExam(who,title,r){try{return await cx0(who,title,r)}finally{tban(null);box.classList.remove('tmode','press');por.classList.remove('zoom')}}
 async function cx0(who,title,r){
  let i=0;setBGM(S.flags.final?'final':'test');
@@ -393,6 +396,7 @@ const SC={
    if(!S.flags.lanDone){await say('bnb','颱風天客人都在房間啦，你要找林先生就在門口那邊。');return}
    if(S.ev.includes('cctv')){await say('bnb','監視器的檔案都給你看過了喔。');return}
    await say('bnb','監視器？有啦，我們門口那支有裝電池，停電也照錄。');await say('bnb','你看……20:45 林先生撐傘出去，手上提一個紅紙盒；21:25 才回來，淋得跟落湯雞一樣，手上空空的。');await getEv('cctv')}},
+  {id:'card',x:38,y:76,w:28,h:9,l:'地上的名片',f:async()=>{await N('民宿門口的積水旁，掉著一張被踩過的名片。');await showDoc('雲嶺開發股份有限公司\n土地開發部\u3000特約顧問\n林\u3000志遠\n\n（背面手寫）\n福記：地坪 32 坪\u3000限月底前簽約\n——上面交代，價錢不是問題');await say('lin','啊，那是我的……還給我。','nervous');await say('lin','……我也只是跑腿的。上面的人催得很緊，月底前談不成，我自己也不好過。','nervous');await getEv('yunling')}},
   {id:'shopdoor',x:2,y:42,w:34,h:32,l:'往福記',f:()=>go('shop')},
   {id:'teadoor',x:74,y:40,w:25,h:35,l:'往茶行',f:()=>go('tea')}],
   people:['lin']},
@@ -538,6 +542,12 @@ async function goodEnd(){
  await say('lan','哼，死老頭命真硬。……我帶了你最愛的凍頂，快喝。','nervous');
  await say('yu','偵探先生，這是福記的芋粿，鹹的喔！謝謝你。','normal');
  setPor(null);
+ await N('林先生被帶走時，口袋裡滑出一張名片，落在我腳邊。');
+ await showDoc('雲嶺開發股份有限公司\n土地開發部　特約顧問\n林　志遠');
+ setPor('me','point');await say('me','雲朵形狀的標誌……雲嶺開發。');
+ await say('me','這個標誌……我好像在哪裡看過。');
+ await N('——阿嬤當年那份賣店的合約上，好像也印著一朵雲。');
+ setPor(null);
  const [sc,rk]=rank();window.__score={sc,rk,hearts:S.hearts,hints:S.hints,miss:S.miss};
  await chapter(`GOOD END<br>〈老街迷香〉<br><span style="font-size:16px">真相：林先生送了摻安眠藥的甜芋粿</span><br><span style="font-size:18px">❤️ 剩餘心數 ${S.hearts}/5<br>💡 使用提示 ${S.hints} 次　❌ 失誤 ${S.miss} 次<br>分數 ${sc}</span><br><span id="rank" style="font-size:54px;color:#ff5a4a">${rk}</span>`);
  $('#chap').style.display='flex';await sleep(window.__fast?100:2500);$('#chap').style.display='none';
@@ -550,6 +560,7 @@ async function prologue(){
  await N('—— 序章 ——\n颱風來的前一天，台北。');
  setPor('me','point');await say('me','我叫許晴，在台北開了一間小小的偵探事務所。專長是找人、找東西，還有找出謊話。');
  await N('那天，事務所收到一封手寫信。寄件人是山城老街「福記」糕餅店的阿福伯——小時候，阿嬤每次帶我回老街，都會買他做的芋粿。');
+ await N('阿嬤以前也在這條老街開過一間雜貨店。我國中那年，她被人逼著把店賣掉，搬到台北以後，就再也沒回來過。');
  await say('fu','（信）小晴，最近一直有人來店裡逼我賣掉福記，還說些奇怪的話。阿伯心裡不安，妳能回來一趟嗎？');
  setPor('me','point');await say('me','我搭了最後一班客運上山，住進老街口的民宿。打算明天一早，就去福記找阿伯問清楚。');
  setPor(null);await N('可是那天晚上，颱風提早登陸了。\n我還來不及見到阿伯——');

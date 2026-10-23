@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>老街迷香</title><!-- build:v10-present -->
+<title>老街迷香</title><!-- build:v11-intro -->
 <style>
 html,body,button,.btn,.hot,#box{touch-action:manipulation}
 #log{position:absolute;inset:0;z-index:12;background:rgba(0,0,0,.9);display:none;flex-direction:column;padding:14px;padding-top:max(14px,env(safe-area-inset-top))}#log h2{color:#f5c26b;text-align:center;margin:4px 0 10px;font-size:20px}#logl{flex:1;overflow:auto;font-size:15px;line-height:1.55;-webkit-overflow-scrolling:touch}#logl p{margin:0 0 10px;white-space:pre-wrap}#logl b{color:#ffd77a}
@@ -544,15 +544,25 @@ async function goodEnd(){
  await N(`🏆 評價：${rk} 級（分數 ${sc}）\n心數 ×20 − 提示 ×5 − 失誤 ×2`);
  await choose([['再玩一次','r','red']]);location.reload();
 }
+/* ---------- prologue ---------- */
+async function prologue(){
+ setBg('street','brightness(.6)');setBGM('inv');
+ await N('—— 序章 ——\n颱風來的前一天，台北。');
+ setPor('me','point');await say('me','我叫許晴，在台北開了一間小小的偵探事務所。專長是找人、找東西，還有找出謊話。');
+ await N('那天，事務所收到一封手寫信。寄件人是山城老街「福記」糕餅店的阿福伯——小時候，阿嬤每次帶我回老街，都會買他做的芋粿。');
+ await say('fu','（信）小晴，最近一直有人來店裡逼我賣掉福記，還說些奇怪的話。阿伯心裡不安，妳能回來一趟嗎？');
+ setPor('me','point');await say('me','我搭了最後一班客運上山，住進老街口的民宿。打算明天一早，就去福記找阿伯問清楚。');
+ setPor(null);await N('可是那天晚上，颱風提早登陸了。\n我還來不及見到阿伯——');
+}
 /* ---------- intro ---------- */
 async function intro(){
- $('#title').style.display='none';await chapter('第一章<br>颱風夜');
+ $('#title').style.display='none';await prologue();await chapter('第一章<br>颱風夜');
  setBg('street');SFX.thunder();
  await N('颱風夜，山城老街。晚上八點四十分，整條街突然停電。');
  await N('九點半，百年糕餅店「福記」的老闆阿福伯，被發現倒在後面的倉庫裡。\n手裡，緊緊握著一塊吃到一半的芋粿。');
  await say('doc','（電話）阿福伯驗出了大量安眠藥，正在昏睡。幸好發現得早，沒有生命危險。');
  await getEv('hosp');
- await say('me','我是偵探。雨停之前，所有人都下不了山——兇手，就在這條街上。');
+ await say('me','我是偵探許晴。阿伯找我來，就是怕出事……雨停之前，所有人都下不了山——兇手，就在這條街上。');
  await N('🔍 點畫面上發光的地方調查；用下方按鈕跟人說話。\n📒 證物隨時可以在右上角查看；證詞卡關可以按「💡 提示」。');
  S.scene='street';
 }

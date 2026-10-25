@@ -189,6 +189,7 @@ html,body{margin:0;height:100%;background:#000;color:#fff;font-family:"PingFang 
 #bar .btn.sym{background:linear-gradient(#d8707f,#8a2a3b)}#bar .btn.firm{background:linear-gradient(#d0452f,#7a1410)}#bar .btn.calm{background:linear-gradient(#3f78b0,#1f3c63)}
 @media (prefers-reduced-motion:reduce){#lkx .btn.rdy{animation:none}}
 </style>
+<style id="fix1">#hud{justify-content:flex-end}#place{position:absolute;left:12px;top:100%;margin-top:-2px;max-width:calc(100% - 24px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(12px,3.4vw,15px)!important;letter-spacing:.5px!important;background:rgba(0,0,0,.45);border-radius:10px;padding:2px 10px;pointer-events:none}#hud>div:last-child{flex:none}#por{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%),linear-gradient(to bottom,#000 82%,transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%),linear-gradient(to bottom,#000 82%,transparent 100%);-webkit-mask-composite:source-in;mask-composite:intersect}</style>
 </head><body><div id="app">
 <div id="bg"></div><canvas id="rain"></canvas>
 <img id="por" alt="">
@@ -513,12 +514,17 @@ function linkScreen(spec){setPor(null);hideBox();$('#bar').style.display='none';
  })}
 const A1REQ=['a_fu','a_jie','a_lan','a_yu','a_lin','lin2','lin3'];
 const a1ready=()=>A1REQ.every(k=>S.flags[k]);
+async function a1Todo(){const NM={a_fu:'阿福伯（福記店裡）',a_jie:'阿傑（福記店裡）',a_lan:'秀蘭姨（茶行）',a_yu:'小雨（福記店裡）',a_lin:'林先生（老街口附近）'};
+ const m=Object.keys(NM).filter(k=>!S.flags[k]).map(k=>NM[k]);
+ if(S.flags.a_lin){if(!S.flags.lin2)m.push('林先生走進了福記，跟過去看看');if(!S.flags.lin3)m.push('林先生走進了茶行，跟過去看看')}
+ await N(m.length?'（還沒認識完：'+m.join('、')+'。）':'（都認識了。）')}
 const a1n=()=>A1REQ.filter(k=>S.flags[k]).length;
 function renderScene(){setBGM('inv');const sc=SC[S.scene];$('#place').textContent='📍 '+sc.name+(S.flags.act2?'':'　傍晚．認識老街 '+a1n()+'/'+A1REQ.length);const H=$('#hs');H.innerHTML='';
  sc.hots.forEach(h=>{if(h.show&&!h.show())return;const d=document.createElement('div');d.className='hot'+(S.flags['h_'+h.id]?' done':'');d.dataset.id=h.id;Object.assign(d.style,{left:h.x+'%',top:h.y+'%',width:h.w+'%',height:h.h+'%'});d.innerHTML=`<span>${h.l}</span>`;d.onclick=()=>act(async()=>{S.flags['h_'+h.id]=1;await h.f()});H.appendChild(d)});
  const b=$('#bar');b.innerHTML='';b.className='hub';b.style.display='flex';b.style.bottom='';
  const pp=typeof sc.people==='function'?sc.people():sc.people;
  pp.forEach(p=>{const x=document.createElement('button');x.className='btn';x.dataset.talk=p;x.textContent='💬 '+CH[p];x.onclick=()=>act(()=>talk(p));b.appendChild(x)});
+ if(!S.flags.act2&&!a1ready()){const x=document.createElement('button');x.className='btn';x.id='a1Help';x.textContent='🔎 還差什麼？';x.onclick=()=>act(a1Todo);b.appendChild(x)}
  if(!S.flags.act2&&a1ready()){const x=document.createElement('button');x.className='btn red';x.id='a1Btn';x.textContent='⏱ 20:00 風變大了';x.onclick=()=>act(act1End);b.appendChild(x)}
  if(canAccuse()){const x=document.createElement('button');x.className='btn red';x.id='accuseBtn';x.textContent='⚖️ 指認兇手';x.onclick=()=>act(accuse);b.appendChild(x)}
  setPor(null);hideBox();
